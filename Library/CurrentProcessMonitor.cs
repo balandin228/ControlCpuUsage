@@ -10,13 +10,20 @@ namespace Library
     {
         public bool HaveConstraint { get;private set; }
         private Semaphore Semaphore { get; set; }
+        private readonly PerformanceCounter _cpuUsageCounter;
         public CurrentProcessMonitor()
         {
             var processName = Process.GetCurrentProcess().ProcessName;
+            _cpuUsageCounter = new PerformanceCounter("Process", "% Processor Time", processName);
             var semaphoreName = processName + nameof(System.Threading.Semaphore);
             HaveConstraint = Semaphore.TryOpenExisting(semaphoreName, out var semaphore);
             if (HaveConstraint)
                 Semaphore = semaphore;
+        }
+
+        public float GetCpuUsage()
+        {
+            return _cpuUsageCounter.NextValue() / Environment.ProcessorCount;
         }
 
         public void Wait()

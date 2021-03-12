@@ -32,11 +32,11 @@ namespace Library
         public void AddProcess(string processName, int threadsCount)
         {
             Counters[processName] = new PerformanceCounter("Process", "% Processor Time", processName);
-            var semaphoreName = processName + nameof(Semaphore);
-            var semaphore = new Semaphore(4, threadsCount, semaphoreName);
-            _semaphores[processName] = semaphore;
-            _semaphoreNames[processName] = semaphoreName;
-            ThreadsCount[processName] = threadsCount;
+            //var semaphoreName = processName + nameof(Semaphore);
+            //var semaphore = new Semaphore(4, threadsCount, semaphoreName);
+            //_semaphores[processName] = semaphore;
+            //_semaphoreNames[processName] = semaphoreName;
+            //ThreadsCount[processName] = threadsCount;
         }
 
         public float GetProcessCpuUsage(string processName)
@@ -56,7 +56,8 @@ namespace Library
         {
             var exist = _semaphores.TryGetValue(processName, out var semaphore);
             if(!exist) return;
-            semaphore.Release();
+            if(semaphore.WaitOne(0))
+                semaphore.Release();
         }
 
         public void Dispose()
