@@ -29,38 +29,32 @@ namespace Library.PrototypeTaskQueue
 
         public void Run()
         { 
-            Task.Run(() => ExecuteIterationThreads(0));
-            while (true)
-            {
-                Console.Write(_currentProcessMonitor.GetCpuUsage());
-                Console.Write("\r");
-                Console.Write("                 ");
-                Console.Write("\r");   
-            }
+            Task.Run(() => ExecuteIterationThreads(0)).Wait();
         }
 
         private Task ExecuteIterationThreads(int groupNumber)
         {
             var threads = CreateThreads(_currentProcessMonitor,_oneIterationThreads, groupNumber );
-            threads.ForEach(x => x.Start());
-            Thread.Sleep(100);
-
-
-            Console.WriteLine($"Part {groupNumber} end ");
+            foreach (var thread in threads)
+            {
+                thread.Start();
+                Console.WriteLine(thread.Name);
+            }
             return Task.CompletedTask;
         }
 
-        private List<Thread> CreateThreads(CurrentProcessMonitor monitor,int threadsCount,int groupNumber)
+        private IEnumerable<Thread> CreateThreads(CurrentProcessMonitor monitor,int threadsCount,int groupNumber)
         {
             var result = new List<Thread>();
             for (var i = 0; i < threadsCount; i++)
             {
                 var workThread = new Thread(() => _task.Execute(null, monitor));
                 workThread.Name = groupNumber.ToString() + "_" + i.ToString() + "_Thread";
-                result.Add(workThread);
+                yield return workThread;
+                if(i%4 == 0 )
+                    Thread.Sleep(20000);
             }
 
-            return result;
         }
     }
 }

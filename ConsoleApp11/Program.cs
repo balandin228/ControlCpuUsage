@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
+using Fs.Processes;
+using Fs.Processes.JobObjects;
 using Library;
+using Library.JobObject;
 
 namespace ConsoleApp11
 {
@@ -13,33 +16,24 @@ namespace ConsoleApp11
         {
             _monitor = new ProcessesSystemMonitor();
             var processFileName  = "C:\\Users\\79090\\Desktop\\Processes\\netcoreapp3.1\\ConsoleApp10.exe";
-            _monitor.AddProcess(processName, 4);
-            using var process = new Process();
-            process.StartInfo.FileName = processFileName;
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardInput = true;
-            process.StartInfo.RedirectStandardError = true;
-            process.StartInfo.CreateNoWindow = true;
-            process.Start();
-            var i = 0;
-            while (i != 200)
+            var job = JobObjectFactory.CreateJob(20, RateControlInterval.Short);
+            var counter = new PerformanceCounter("Process", "% Processor Time", processName);
+            var createProcessInfo = new CreateProcessInfo()
             {
-                i++;
-                var cpu = _monitor.GetProcessCpuUsage(processName);
-                Console.Write($"Cpu={cpu}");
+                FileName = "C:\\Users\\79090\\Desktop\\Processes\\netcoreapp3.1\\ConsoleApp10.exe",
+                RedirectStandardOutput = true,
+                RedirectStandardInput = true,
+                RedirectStandardError = true,
+            };
+            var process = job.CreateProcess(createProcessInfo);
+            while (!job.Idle.IsCompleted)
+            {
                 Thread.Sleep(100);
                 Console.Write("\r");
                 Console.Write("                 ");
                 Console.Write("\r");
-                //if (cpu > 30)
-                //    _monitor.SuspendProcess("ConsoleApp10");
-                //else
-                //    _monitor.ReleaseProcess(processName);
+                Console.WriteLine( counter.NextValue() / Environment.ProcessorCount);
             }
-
-            _monitor.Dispose();
-
         }
     }
 }

@@ -20,9 +20,11 @@ namespace Library.PrototypeTaskQueue.PrototypeTask
             Console.WriteLine($"Thread {threadName} start");
             //currentProcessMonitor.Wait();
             //Console.WriteLine($"Thread {threadName} take semaphore");
-            while (true)
+            var k = 0;
+            while (k!= 100)
             {
-
+                k++;
+                k--;
             }
             //foreach (var i in Fibonacci)
             //{
